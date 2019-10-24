@@ -9,7 +9,7 @@ router.route('/user')
 
 
 const RunController = require('./controllers/RunController');
-router.route('/run').get(RunController.getRunById);
+router.route('/run/:run_id').get(RunController.getRunById);
 router.route('/run/start').post(RunController.start);
 router.route('/run/record').post(RunController.record);
 
