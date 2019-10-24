@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node server/index.js",
     "dev": "concurrently --raw \"webpack --mode=development --watch\" \"NODE_ENV=development node server/index.js\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "heroku-postbuild": "webpack -p"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +14,7 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "concurrently": "^5.0.0",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "pg": "^7.12.1",
     "pg-hstore": "^2.3.3",

@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const apiRoutes = require('./apiRoutes');
 
+require('dotenv').config();
+
 // Express Set-up
 const app = express();
 
@@ -38,6 +40,7 @@ app.use(function (err, req, res, next) {
 });
 
 // Start Server
-app.listen(3000, function () {
-  console.log('Server started at port 3000');
+const port = process.env.PORT || 3000;
+app.listen(port, function () {
+  console.log('Server started at port ' + port);
 });

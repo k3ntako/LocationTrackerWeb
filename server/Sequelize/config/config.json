@@ -4,21 +4,23 @@
     "password": null,
     "database": "location_tracker",
     "host": "127.0.0.1",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "use_env_variable": false
   },
   "test": {
     "username": null,
     "password": null,
     "database": "location_tracker_test",
     "host": "127.0.0.1",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "use_env_variable": false
   },
   "production": {
     "username": null,
     "password": null,
     "database": "location_tracker",
-    "host": "127.0.0.1",
     "dialect": "postgres",
-    "logging": false
+    "logging": false,
+    "use_env_variable": "DATABASE_URL"
   }
 }
