@@ -9,7 +9,9 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
   }, {});
   Run.associate = function(models) {
-    Run.belongsTo(models.User);
+    Run.belongsTo(models.User,{
+      foreignKey: 'user_id'
+    });
 
     Run.hasOne(models.LocationPoint, {
       foreignKey: 'run_id',

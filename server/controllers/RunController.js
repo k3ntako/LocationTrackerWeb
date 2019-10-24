@@ -1,4 +1,5 @@
-const {Run, LocationPoint} = require('../Sequelize/models');
+const {Sequelize, Run, LocationPoint} = require('../Sequelize/models');
+const Op = Sequelize.Op
 
 const RunController = {
 
@@ -33,6 +34,34 @@ const RunController = {
       let run = await locationPoint.getRun();
 
       res.json({okay: true});
+      next();
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async getRunById(req, res, next) {
+    try {
+      const { run_id, afterTime } = req.body;
+      let where = {};
+      if (afterTime || afterTime === 0 ){
+        where = {
+          time: {
+            [Op.gt]: afterTime, //returns points after the specified time
+          }
+        }
+      }
+      
+      const run = await Run.findByPk(run_id, {
+        include: [{ 
+          model: LocationPoint, 
+          as: "locationPoints",
+          attributes: ["id", "latitude", "longitude", "time"],
+          where: where,
+        }],
+      });
+
+      res.json(run.toJSON());
       next();
     } catch (err) {
       next(err);

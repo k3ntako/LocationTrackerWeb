@@ -11,7 +11,9 @@ module.exports = (sequelize, DataTypes) => {
     time: DataTypes.DATE
   }, {});
   LocationPoint.associate = function(models) {
-    LocationPoint.belongsTo(models.Run);
+    LocationPoint.belongsTo(models.Run, {
+      foreignKey: 'run_id'
+    });
   };
   return LocationPoint;
 };
