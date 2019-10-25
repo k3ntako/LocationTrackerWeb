@@ -1,10 +1,15 @@
-const { User } = require('../Sequelize/models');
+const crypto = require('crypto');
+const { sequelize, User, UserAuth } = require('../Sequelize/models');
+
+const hashPassword = (password, salt) => {
+  return crypto.pbkdf2Sync(password, salt, 10, 64, 'sha512').toString('hex');
+}
 
 const UserController = {
 
-  async create(req, res, next) {
+  async signup(req, res, next) {
     try {
-      const { email, first_name, last_name } = req.body;
+      const { email, first_name, last_name, password } = req.body;
       let parsedEmail = email.trim().toLowerCase();
 
       if (!parsedEmail) {
@@ -17,11 +22,72 @@ const UserController = {
         throw new Error("Invalid name")
       }
 
-      const user = await User.create({
-        email: parsedEmail,
-        first_name: parsedFirstName,
-        last_name: parsedLastName,
+      if(!password){
+        throw new Error("No password provided");
+      }
+
+      const existingUser = await User.findOne({
+        where: {email: parsedEmail},
+      });      
+
+      if (existingUser) {
+        throw new Error(`User with email, ${parsedEmail}, already exists`);
+      }
+
+      const salt = crypto.randomBytes(256).toString('hex').slice(0, 255);
+      const passhash = hashPassword(password, salt);
+
+      let user;
+      await sequelize.transaction(t => {
+        return User.create({
+          email: parsedEmail,
+          first_name: parsedFirstName,
+          last_name: parsedLastName,
+        }, { transaction: t }).then(newUser => {
+          user = newUser;
+          return UserAuth.create({
+            passhash: passhash,
+            salt: salt,
+            user_id: user.id,
+          }, { transaction: t });
+        });
+      }).catch(err => {
+        user = null;
+        throw new Error(err);
       });
+
+      res.json({ user_id: user.id });
+      next();
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async login(req, res, next) {
+    try {
+      const { email, password } = req.body;
+      let parsedEmail = email.trim().toLowerCase();
+
+      if (!parsedEmail) {
+        throw new Error("Invalid email")
+      }
+
+      const user = await User.findOne({ 
+        where: { email: parsedEmail },
+        include: [{
+          model: UserAuth,
+          as: "auth",
+        }],
+      });
+
+      if (!user) {
+        throw new Error("Email does not match a user on this account"); //TODO: is this a bad idea to let anyone know about account existence?
+      }
+
+      const passhash = hashPassword(password, user.auth.salt);
+      if(user.auth.passhash !== passhash){
+        throw new Error("Email and password do not match"); 
+      }
 
       res.json({ user_id: user.id });
       next();

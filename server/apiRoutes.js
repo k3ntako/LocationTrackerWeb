@@ -3,9 +3,9 @@ let router = express.Router();
 
 
 const UserController = require('./controllers/UserController');
-router.route('/user')
-  .post(UserController.create)
-  .get(UserController.getByEmail);
+router.route('/user').get(UserController.getByEmail);
+router.route('/user/signup').post(UserController.signup);
+router.route('/user/login').post(UserController.login);
 
 
 const RunController = require('./controllers/RunController');

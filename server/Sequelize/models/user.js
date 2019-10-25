@@ -15,9 +15,14 @@ module.exports = (sequelize, DataTypes) => {
     ],
   });
   User.associate = function(models) {
-    User.hasOne(models.Run, {
+    User.hasMany(models.Run, {
       foreignKey: 'user_id',
       as: 'runs'
+    });
+
+    User.hasOne(models.UserAuth, {
+      foreignKey: 'user_id',
+      as: 'auth'
     });
   };
   return User;
