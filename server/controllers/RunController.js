@@ -43,6 +43,8 @@ const RunController = {
   async getRunById(req, res, next) {
     try {
       const { run_id } = req.params;
+      const { afterTime } = req.query;
+      
       let where = {};
       if (afterTime || afterTime === 0 ){
         where = {
