@@ -20,6 +20,7 @@ module.exports = {
         type: Sequelize.DATE,
       },
       run_id: {
+        allowNull: false,
         type: Sequelize.UUID,
         references: {
           model: 'Runs',
