@@ -60,6 +60,9 @@ const RunController = {
           as: "locationPoints",
           attributes: ["id", "latitude", "longitude", "time"],
           where: where,
+          order:[
+            ['time', 'ASC'],
+          ]
         }],
       });
 
