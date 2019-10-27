@@ -31,6 +31,7 @@
     "sequelize-cli": "^5.5.1"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
     "babel-loader": "^8.0.6",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.9"
