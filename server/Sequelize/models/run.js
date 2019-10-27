@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'user_id'
     });
 
-    Run.hasOne(models.LocationPoint, {
+    Run.hasMany(models.LocationPoint, {
       foreignKey: 'run_id',
       as: 'locationPoints'
     });
