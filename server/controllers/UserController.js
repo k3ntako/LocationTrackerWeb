@@ -48,7 +48,7 @@ const UserController = {
           return UserAuth.create({
             passhash: passhash,
             salt: salt,
-            user_id: user.id,
+            user,
           }, { transaction: t });
         });
       }).catch(err => {
@@ -89,7 +89,7 @@ const UserController = {
         throw new Error("Email and password do not match"); 
       }
 
-      res.json({ user_id: user.id });
+      res.json({ user });
       next();
     } catch (err) {
       next(err);
@@ -104,7 +104,7 @@ const UserController = {
 
       const userId = user ? user.id : null;
 
-      res.json({user_id: userId});
+      res.json({user});
       next();
     } catch (err) {
       next(err);
