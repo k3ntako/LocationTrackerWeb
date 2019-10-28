@@ -56,7 +56,11 @@ const UserController = {
         throw new Error(err);
       });
 
-      res.json({ user_id: user.id });
+      if (!user) {
+        throw new Error(`User was not created`);
+      }
+
+      res.json({ user: user.toPublicJSON() });
       next();
     } catch (err) {
       next(err);
@@ -89,7 +93,7 @@ const UserController = {
         throw new Error("Email and password do not match"); 
       }
 
-      res.json({ user });
+      res.json({ user: user.toPublicJSON() });
       next();
     } catch (err) {
       next(err);
@@ -98,13 +102,16 @@ const UserController = {
 
   async getByEmail(req, res, next){
     try{
-      const user = await User.findOne({ where: {
-        email: req.body.email.trim().toLowerCase() 
-      }});
+      const email = req.body.email.trim().toLowerCase();
+      const user = await User.findOne({ 
+        where: { email },
+     });
+     
+     if (!user) {
+       throw new Error(`User with email, ${email}, was not found`); 
+     }
 
-      const userId = user ? user.id : null;
-
-      res.json({user});
+      res.json({ user: user.toPublicJSON() });
       next();
     } catch (err) {
       next(err);

@@ -14,6 +14,14 @@ module.exports = (sequelize, DataTypes) => {
       { unique: true, fields: ['email'] }
     ],
   });
+
+  User.prototype.toPublicJSON = function () {
+    const values = Object.assign({}, this.get());
+    const {id, email, first_name, last_name} = values;
+
+    return { id, email, first_name, last_name };
+  };
+
   User.associate = function(models) {
     User.hasMany(models.Run, {
       foreignKey: 'user_id',
