@@ -16,25 +16,42 @@ class index extends Component {
     }
 
     this.state = {
-      locations: [],
       run_id: run_id,
-      locations: [],
+      polylineCode: null,
+      updatedAt: null,
+      startCoordinate: null,
+      currentCoordinate: null,
     }
   }
 
   componentDidMount(){
-    if(this.state.run_id){
-      getRun(this.state.run_id).then(run => {
-        this.setState({ locations: run.locationPoints });
-      });      
+    this.getRun();
+  }
+
+  getRun = async () => {
+    const run_id = this.state.run_id;
+    if (!run_id) {
+      return;
     }
+
+    const response = await getRun(run_id, this.state.updatedAt);
+    if (!response.changed) {
+      return;
+    }
+
+    const { polylineCode, updatedAt, startCoordinate, currentCoordinate } = response;
+    this.setState({ polylineCode, updatedAt, startCoordinate, currentCoordinate });
   }
   
   render() {
+    const { polylineCode, startCoordinate, currentCoordinate } = this.state;
+
     return (
       <div>
         <Map
-          locations={this.state.locations}
+          polylineCode={polylineCode}
+          startCoordinate={startCoordinate}
+          currentCoordinate={currentCoordinate}
           googleMapURL={"https://maps.googleapis.com/maps/api/js?key=AIzaSyBNw8ZOZT-iRYex-8YY8a7vbtHkElGO8II&v=3.exp&libraries=geometry,drawing,places"}
           loadingElement={<div style={{ height: `100%` }} />}
           containerElement={<div style={{ height: `100vh` }} />}

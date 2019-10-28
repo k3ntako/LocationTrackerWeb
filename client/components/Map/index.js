@@ -2,8 +2,6 @@ import React, {Component} from 'react';
 import { withScriptjs, withGoogleMap, GoogleMap, Marker } from "react-google-maps";
 import PropTypes from 'prop-types';
 import { MAP } from 'react-google-maps/lib/constants';
-import roadUtils from '../../utilities/roadUtils';
-const getSnappedPoints = roadUtils.getSnappedPoints;
 
 class Map extends Component{
   static contextTypes = { [MAP]: PropTypes.object };
@@ -12,53 +10,61 @@ class Map extends Component{
     super(props);
     this.state = {
       snappedPoints: [],
+      polyline: null,
+      polylineCode: null,
     };
 
     this.map = null;
   }
 
+  static getDerivedStateFromProps(props, state){
+    const { polylineCode } = props;
+
+    if (!polylineCode){
+      return null;
+    }
+
+    if (polylineCode === state.polylineCode){
+      return null;
+    }
+
+    const decodedPolylineCode = google.maps.geometry.encoding.decodePath(polylineCode);
+    const polyline = new google.maps.Polyline({
+      path: decodedPolylineCode,
+      geodesic: true,
+      strokeColor: '#FF0000',
+      strokeOpacity: 1.0,
+      strokeWeight: 2,
+    });
+
+    //TODO: change bounds
+
+    return { polyline, polylineCode };
+  }
+
   componentDidMount(){
     this.map = this.context[MAP];
+    if(!this.map){
+      throw new Error("No map. Try reloading the page.")
+    }
+  }
 
-    if (this.map && this.props.locations && this.props.locations.length) {
-      let path = '';
-      this.props.locations.forEach(location => {
-        path += `${location.latitude},${location.longitude}|`;
-      });
-      path = path.substring(0, path.length - 1);
-
-      getSnappedPoints(path).then(snappedPoints => {
-        this.setState({ snappedPoints: snappedPoints.snappedPoints });
-      })
+  componentDidUpdate(){
+    if(this.state.polyline){      
+      this.state.polyline.setMap(this.map);
     }
   }
   
   render(){
-    if (this.state.snappedPoints.length) {
-      const path = this.state.snappedPoints.map(location => {
-        
-        return {
-          lat: location.location.latitude,
-          lng: location.location.longitude,
-        }
-      });
-
-      const runPath = new google.maps.Polyline({
-        path: path,
-        geodesic: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 1.0,
-        strokeWeight: 2,
-      });    
-      
-      runPath.setMap(this.map);
+    const {startCoordinate, currentCoordinate} = this.props;
+    let markers;
+    if (startCoordinate && currentCoordinate){
+      markers = [startCoordinate, currentCoordinate].map(location => {
+        return <Marker
+          key={location.id}
+          position={{ lat: location.latitude, lng: location.longitude }} />
+      })
     }
-
-    const markers = this.props.locations && this.props.locations.map(location => {
-      return <Marker
-        key={location.id}
-        position={{ lat: location.latitude, lng: location.longitude }} />
-    })
 
     return <GoogleMap
       defaultZoom={13}

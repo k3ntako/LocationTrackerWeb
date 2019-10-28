@@ -1,10 +1,6 @@
 export default {
   get: async url => {
-    const response = await fetch(url, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await fetch(url);
 
     return await response.json();
   },
