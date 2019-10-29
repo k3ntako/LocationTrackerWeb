@@ -27,14 +27,18 @@ const RunController = {
 
   async record(req, res, next) {
     try {
-      const { longitude, latitude, time } = req.body;
       const { run_id } = req.params;
+      const run = await Run.findByPk(run_id);
+      
+      if (run.done) {
+        throw new Error('This run is already done');
+      }
 
-      const locationPoint = await LocationPoint.create({
+      const { longitude, latitude, time } = req.body;
+
+      await LocationPoint.create({
         latitude, longitude, time, run_id,
       });
-
-      let run = await locationPoint.getRun();
 
       res.json({okay: true});
       next();
