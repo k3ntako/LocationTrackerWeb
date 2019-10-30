@@ -1,9 +1,22 @@
 const {Sequelize, Run, LocationPoint} = require('../Sequelize/models');
-const Op = Sequelize.Op
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const { getPolylineCode } = require('../utilities/runUtils');
 
 const RunController = {
+
+  async create(req, res, next) {
+    try {
+      const { name, user_id } = req.body;
+
+      const run = await Run.create({ name, user_id });
+
+      res.json({ run_id: run.id });
+      next();
+    } catch (err) {
+      next(err);
+    }
+  },
 
   async start(req, res, next){
     try{
@@ -28,8 +41,17 @@ const RunController = {
   async record(req, res, next) {
     try {
       const { run_id } = req.params;
-      const run = await Run.findByPk(run_id);
+      console.log('req.body', req.body);
       
+      if (!run_id || !uuidRegex.test(run_id)) {
+        throw Error('Invalid run ID');
+      }
+
+      const run = await Run.findByPk(run_id);
+
+      if (!run) {
+        throw Error('No run with provided ID');
+      }
       if (run.done) {
         throw new Error('This run is already done');
       }
