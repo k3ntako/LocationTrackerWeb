@@ -41,7 +41,6 @@ const RunController = {
   async record(req, res, next) {
     try {
       const { run_id } = req.params;
-      console.log('req.body', req.body);
       
       if (!run_id || !uuidRegex.test(run_id)) {
         throw Error('Invalid run ID');
@@ -56,7 +55,13 @@ const RunController = {
         throw new Error('This run is already done');
       }
 
-      const { longitude, latitude, time } = req.body;
+      const { longitude, latitude } = req.body.location.coords;
+      const time = req.body.location.timestamp;
+
+      console.log('-- Params --')
+      console.log('longitude', longitude, 'latitude', latitude, 'time', time);
+      console.log('----')
+      
 
       await LocationPoint.create({
         latitude, longitude, time, run_id,
