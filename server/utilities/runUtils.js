@@ -28,15 +28,20 @@ module.exports = {
         latitude: originPoint.latitude,
         longitude: originPoint.longitude,
       }
-      const currentCoordinate = {
-        latitude: destinationPoint.latitude,
-        longitude: destinationPoint.longitude,
-      };
 
-      return [polylineCode, destinationPoint.time, startCoordinate, currentCoordinate];
+      return [polylineCode, destinationPoint.time, startCoordinate];
     } catch (err) {
       console.error(err);
       return err;
     }
   },
+  generatePolylineResponse: (polylineCode, updatedAt, currentCoordinate, startCoordinate) => {
+    return {
+      polylineCode,
+      updatedAt,
+      currentCoordinate,
+      startCoordinate,
+      changed: true,
+    };
+  }
 }

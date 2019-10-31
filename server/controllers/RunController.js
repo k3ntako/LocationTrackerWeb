@@ -1,7 +1,7 @@
 const {Sequelize, Run, LocationPoint} = require('../Sequelize/models');
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-const { getPolylineCode } = require('../utilities/runUtils');
+const { getPolylineCode, generatePolylineResponse } = require('../utilities/runUtils');
 
 const RunController = {
 
@@ -21,6 +21,20 @@ const RunController = {
   async start(req, res, next){
     try{
       const { name, latitude, longitude, time, user_id } = req.body;
+
+      // All other runs will be marked as done
+      const rowsUpdated = await Run.update({
+        done: true,
+      }, {
+        where: {
+          user_id: user_id,
+          done: false,
+        }
+      });
+
+      if (rowsUpdated[0] > 1){
+        console.error(`User: ${user_id}: ${rowsUpdated[0]} runs were not finished.`); // In theory, at most only one run should be active at a time.  
+      }
 
       const run = await Run.create({ name, user_id });
 
@@ -94,35 +108,31 @@ const RunController = {
       }
 
       const polyline_updated_at = run.polyline_updated_at;
-      const lastLocationPoint = locationPoints[locationPoints.length - 1];      
+      const lastLocationPoint = locationPoints[locationPoints.length - 1]; 
+      
+      const currentCoordinate = {
+        latitude: lastLocationPoint.latitude,
+        longitude: lastLocationPoint.longitude,
+      };
 
       if (!run.polyline || !run.polyline_updated_at || polyline_updated_at.getTime() !== lastLocationPoint.time.getTime()){
         // if polyline code in our DB is not up-to-date
-        const [polylineCode, updatedAt, startCoordinate, currentCoordinate] = await getPolylineCode(locationPoints);
+        const [polylineCode, updatedAt, startCoordinate] = await getPolylineCode(locationPoints);
         
 
         run.polyline = polylineCode;
         run.polyline_updated_at = updatedAt;
         await run.save();
-        
-        responseJSON.changed = true;
-        responseJSON.polylineCode = polylineCode;
-        responseJSON.updatedAt = updatedAt;
-        responseJSON.currentCoordinate = currentCoordinate;
-        responseJSON.startCoordinate = startCoordinate;
+
+        responseJSON = generatePolylineResponse(polylineCode, updatedAt, currentCoordinate, startCoordinate);
       } else if (!lastupdate || run.polyline_updated_at.getTime() >= lastupdate.getTime()){
         // if our DB is up-to-date, but the client is not
-        responseJSON.changed = true;
-        responseJSON.polylineCode = run.polyline;
-        responseJSON.updatedAt = lastLocationPoint.time;
-        responseJSON.startCoordinate = {
+        const startCoordinate = {
           latitude: locationPoints[0].latitude,
           longitude: locationPoints[0].longitude,
         };
-        responseJSON.currentCoordinate = {
-          latitude: lastLocationPoint.latitude,
-          longitude: lastLocationPoint.longitude,
-        };
+        
+        responseJSON = generatePolylineResponse(run.polyline, lastLocationPoint.time, currentCoordinate, startCoordinate);
       }
 
       res.json(responseJSON);
