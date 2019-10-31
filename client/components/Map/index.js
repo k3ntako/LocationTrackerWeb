@@ -52,6 +52,9 @@ class Map extends Component{
   componentDidUpdate(){
     if(this.state.polyline){      
       this.state.polyline.setMap(this.map);
+
+      const currentCoordinate = this.props.currentCoordinate;
+      currentCoordinate && this.map.setCenter(currentCoordinate);
     }
   }
   

@@ -36,10 +36,16 @@ class index extends Component {
       startCoordinate: null,
       currentCoordinate: null,
     }
+
+    this.innterval = null;
   }
 
   componentDidMount(){
     this.getRun();
+
+    this.interval = setInterval(() => {
+      this.getRun();
+    }, 10000)
   }
 
   getRun = async () => {
