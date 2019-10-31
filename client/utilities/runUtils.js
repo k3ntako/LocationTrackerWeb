@@ -13,4 +13,13 @@ export default {
       return err;
     }
   },
+  getUserLiveRun: async (user_id, lastUpdate = null) => {
+    try {
+      const lastUpdateQuery = lastUpdate ? `?lastUpdate=${lastUpdate}` : ''
+      return await fetchUtils.get(`https://location-tracker25.herokuapp.com/api/user/${user_id}/live${lastUpdateQuery}`);
+    } catch (err) {
+      console.error(err);
+      return err;
+    }
+  },
 };
