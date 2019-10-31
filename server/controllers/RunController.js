@@ -23,6 +23,7 @@ const getPolylineResponse = async (run, lastupdate) =>{
   };
 
   if (!run.polyline || !run.polyline_updated_at || polyline_updated_at.getTime() !== lastLocationPoint.time.getTime()) {
+    console.log('Update polyline');
     // if polyline code in our DB is not up-to-date
     const [polylineCode, updatedAt, startCoordinate] = await getPolylineCode(locationPoints);
 
@@ -32,6 +33,7 @@ const getPolylineResponse = async (run, lastupdate) =>{
 
     return generatePolylineResponse(polylineCode, updatedAt, currentCoordinate, startCoordinate);
   } else if (!lastupdate || run.polyline_updated_at.getTime() >= lastupdate.getTime()) {
+    console.log('Use saved polyline');
     // if our DB is up-to-date, but the client is not
     const startCoordinate = {
       latitude: locationPoints[0].latitude,

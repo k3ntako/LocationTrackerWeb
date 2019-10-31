@@ -20,6 +20,9 @@ module.exports = {
       url += `&waypoints=via:` + locationURL;
 
       const response = await fetchUtils.get(url);
+      if(!response.routes || !response.routes.length){
+        throw new Error('Invalid polyline response: ', response);
+      }
       const polylineCode = response.routes[0].overview_polyline.points;
 
       const originPoint = locationPoints[0];
