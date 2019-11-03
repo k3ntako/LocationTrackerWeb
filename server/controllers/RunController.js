@@ -1,11 +1,11 @@
-const {Sequelize, Run, LocationPoint} = require('../Sequelize/models');
+const {Sequelize, Run, LocationPoint, Polyline} = require('../Sequelize/models');
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 const { getPolylineCode, generatePolylineResponse } = require('../utilities/runUtils');
 
 
-const getPolylineResponse = async (run, lastupdate) =>{  
-  lastupdate = lastupdate && new Date(lastupdate);
+const getPolylineResponse = async (run, after) => {  
+  after = after && new Date(after);
 
   const locationPoints = await run.getLocationPoints({
     attributes: ["id", "latitude", "longitude", "time"],
@@ -22,25 +22,36 @@ const getPolylineResponse = async (run, lastupdate) =>{
     longitude: lastLocationPoint.longitude,
   };
 
-  if (!run.polyline || !run.polyline_updated_at || polyline_updated_at.getTime() !== lastLocationPoint.time.getTime()) {
-    console.log('Update polyline');
+  let polylines = await run.getPolylines();
+
+  if (!polylines|| !polylines.length || !run.polyline_updated_at || polyline_updated_at.getTime() !== lastLocationPoint.time.getTime()) {
     // if polyline code in our DB is not up-to-date
-    const [polylineCode, updatedAt, startCoordinate] = await getPolylineCode(locationPoints);
+    const [polylineCode, updatedAt, startCoordinate] = await getPolylineCode(locationPoints, run.polyline_updated_at);
+    const orderNum = polylines.length ? polylines[polylines.length - 1].order + 1 : 0;
 
-    run.polyline = polylineCode;
+    await Polyline.create({
+      run_id: run.id,
+      code: polylineCode,
+      order: orderNum,
+      created_at: updatedAt,
+    });
+
     run.polyline_updated_at = updatedAt;
-    await run.save();
+    run = await run.save();
 
-    return generatePolylineResponse(polylineCode, updatedAt, currentCoordinate, startCoordinate);
-  } else if (!lastupdate || run.polyline_updated_at.getTime() >= lastupdate.getTime()) {
-    console.log('Use saved polyline');
+    polylines = await run.getPolylines().map(polyline => polyline.code);
+
+    return generatePolylineResponse(polylines, updatedAt, currentCoordinate, startCoordinate);
+  } else if (!after || run.polyline_updated_at.getTime() >= after.getTime()) {
     // if our DB is up-to-date, but the client is not
     const startCoordinate = {
       latitude: locationPoints[0].latitude,
       longitude: locationPoints[0].longitude,
     };
 
-    return generatePolylineResponse(run.polyline, lastLocationPoint.time, currentCoordinate, startCoordinate);
+    polylines = polylines.map(polyline => polyline.code);
+
+    return generatePolylineResponse(polylines, lastLocationPoint.time, currentCoordinate, startCoordinate);
   }else{
     return {
       changed: false,
@@ -117,10 +128,6 @@ const RunController = {
       const { longitude, latitude } = req.body.location.coords;
       const time = req.body.location.timestamp;
 
-      console.log('-- Params --')
-      console.log('longitude', longitude, 'latitude', latitude, 'time', time);
-      console.log('----')
-      
 
       await LocationPoint.create({
         latitude, longitude, time, run_id,
@@ -136,11 +143,11 @@ const RunController = {
   async getRunById(req, res, next) {
     try {
       const { run_id } = req.params;
-      let { lastupdate } = req.query;
+      let { after } = req.query;
 
-      const run = await Run.findByPk(run_id, lastupdate);
+      const run = await Run.findByPk(run_id, after);
     
-      const responseJSON = await getPolylineResponse(run, lastupdate);
+      const responseJSON = await getPolylineResponse(run, after);
 
       res.json(responseJSON);
       next();
@@ -172,7 +179,7 @@ const RunController = {
   async getUserLiveRun(req, res, next) {
     try {
       const { user_id } = req.params;
-      let { lastupdate } = req.query;      
+      let { after } = req.query;      
       
       const runs = await Run.findAll({
         where: {
@@ -189,7 +196,7 @@ const RunController = {
         throw new Error('No live run');
       }
 
-      const responseJSON = await getPolylineResponse(run, lastupdate);
+      const responseJSON = await getPolylineResponse(run, after);
 
       res.json(responseJSON);
       next();

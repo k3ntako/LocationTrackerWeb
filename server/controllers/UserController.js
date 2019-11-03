@@ -48,7 +48,7 @@ const UserController = {
           return UserAuth.create({
             passhash: passhash,
             salt: salt,
-            user,
+            user_id: user.id,
           }, { transaction: t });
         });
       }).catch(err => {

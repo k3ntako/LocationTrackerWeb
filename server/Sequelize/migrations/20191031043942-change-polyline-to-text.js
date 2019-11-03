@@ -13,7 +13,7 @@ module.exports = {
 
   down: (queryInterface, Sequelize) => {
     return queryInterface.changeColumn(
-    'Runs',
+      'Runs',
       'polyline',
       {
         type: Sequelize.STRING,

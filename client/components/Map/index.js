@@ -10,36 +10,52 @@ class Map extends Component{
     super(props);
     this.state = {
       snappedPoints: [],
-      polyline: null,
-      polylineCode: null,
+      polylines: [],
+      polylineCodes: [],
+      newPolylineCount: 0,
     };
 
     this.map = null;
   }
 
   static getDerivedStateFromProps(props, state){
-    const { polylineCode } = props;
+    const { polylineCodes } = props;
 
-    if (!polylineCode){
+    if (!polylineCodes.length) {
       return null;
     }
 
-    if (polylineCode === state.polylineCode){
+    if (state.polylineCodes.includes(props.polylineCodes[0])) {
       return null;
     }
 
-    const decodedPolylineCode = google.maps.geometry.encoding.decodePath(polylineCode);
-    const polyline = new google.maps.Polyline({
-      path: decodedPolylineCode,
-      geodesic: true,
-      strokeColor: '#FF0000',
-      strokeOpacity: 1.0,
-      strokeWeight: 2,
+    // if (polylineCodes.length === state.polylineCodes.length){
+    //   return null;
+    // }
+
+
+    // const newPolylineCodes = polylineCodes.slice(state.polylineCodes.length);
+    const newPolylineCodes = polylineCodes;
+
+    const decodedPolylineCodes = newPolylineCodes.map(code => google.maps.geometry.encoding.decodePath(code));
+    
+    const newPolylines = decodedPolylineCodes.map(path => {
+      return new google.maps.Polyline({
+        path: path,
+        geodesic: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 1.0,
+        strokeWeight: 2,
+      });
     });
 
     //TODO: change bounds
 
-    return { polyline, polylineCode };
+    return {
+      polylines: state.polylines.concat(newPolylines),
+      polylineCodes,
+      newPolylineCount: newPolylines.length
+    };
   }
 
   componentDidMount(){
@@ -50,11 +66,28 @@ class Map extends Component{
   }
 
   componentDidUpdate(){
-    if(this.state.polyline){      
-      this.state.polyline.setMap(this.map);
+    const { polylines, newPolylineCount } = this.state;
 
-      const currentCoordinate = this.props.currentCoordinate;
-      currentCoordinate && this.map.setCenter(currentCoordinate);
+    if (polylines.length && newPolylineCount) {
+      const newPolylines = polylines.slice(polylines.length - newPolylineCount);
+      newPolylines.map(polyline => {
+        polyline.setMap(this.map);
+      });
+
+      const { latitude, longitude } = this.props.currentCoordinate;
+
+      if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        const center = {
+          lat: latitude,
+          lng: longitude,
+        }
+
+        this.map.setCenter(center);
+      }
+
+      this.setState({
+        newPolylineCount: 0,
+      })
     }
   }
   
@@ -62,9 +95,9 @@ class Map extends Component{
     const {startCoordinate, currentCoordinate} = this.props;
     let markers;
     if (startCoordinate && currentCoordinate){
-      markers = [startCoordinate, currentCoordinate].map(location => {
+      markers = [startCoordinate, currentCoordinate].map((location, idx) => {
         return <Marker
-          key={location.id}
+          key={idx}
           position={{ lat: location.latitude, lng: location.longitude }} />
       })
     }

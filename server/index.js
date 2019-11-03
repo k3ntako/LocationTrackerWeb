@@ -1,9 +1,9 @@
+require('dotenv').config();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const apiRoutes = require('./apiRoutes');
-
-require('dotenv').config();
 
 // Express Set-up
 const app = express();

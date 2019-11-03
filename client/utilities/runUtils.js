@@ -2,10 +2,10 @@ import fetchUtils from './fetchUtils';
 
 
 export default {
-  getRun: async (run_id, lastUpdate = null) => {
+  getRun: async (run_id, after = null) => {
     try {
-      const lastUpdateQuery = lastUpdate ? `?lastUpdate=${lastUpdate}` : ''
-      const response = await fetchUtils.get('https://location-tracker25.herokuapp.com/api/run/' + run_id + lastUpdateQuery);
+      const afterQuery = after ? `?after=${after}` : ''
+      const response = await fetchUtils.get('/api/run/' + run_id + afterQuery);
       
       return response;
     } catch (err) {
@@ -13,10 +13,10 @@ export default {
       return err;
     }
   },
-  getUserLiveRun: async (user_id, lastUpdate = null) => {
+  getUserLiveRun: async (user_id, after = null) => {
     try {
-      const lastUpdateQuery = lastUpdate ? `?lastUpdate=${lastUpdate}` : ''
-      return await fetchUtils.get(`https://location-tracker25.herokuapp.com/api/user/${user_id}/live${lastUpdateQuery}`);
+      const afterQuery = after ? `?after=${after}` : ''
+      return await fetchUtils.get(`/api/user/${user_id}/live${afterQuery}`);
     } catch (err) {
       console.error(err);
       return err;

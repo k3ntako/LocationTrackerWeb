@@ -7,7 +7,6 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
     },
     name: DataTypes.STRING,
-    polyline: DataTypes.STRING,
     polyline_updated_at: DataTypes.DATE,
     done: DataTypes.BOOLEAN,
   }, {});
@@ -19,6 +18,11 @@ module.exports = (sequelize, DataTypes) => {
     Run.hasMany(models.LocationPoint, {
       foreignKey: 'run_id',
       as: 'locationPoints'
+    });
+
+    Run.hasMany(models.Polyline, {
+      foreignKey: 'run_id',
+      as: 'polylines'
     });
   };
   return Run;

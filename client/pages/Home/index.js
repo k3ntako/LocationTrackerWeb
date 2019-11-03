@@ -31,24 +31,24 @@ class index extends Component {
     this.state = {
       run_id: run_id || null,
       user_id: user_id || null,
-      polylineCode: null,
+      polylineCodes: [],
       updatedAt: null,
       startCoordinate: null,
       currentCoordinate: null,
     }
 
-    this.innterval = null;
+    this.interval = null;
   }
 
   componentDidMount(){
     this.getRun();
-
+    
     this.interval = setInterval(() => {
       this.getRun();
-    }, 10000)
+    }, 10000)    
   }
 
-  getRun = async () => {
+  getRun = async () => {    
     const {run_id, user_id} = this.state;
 
     let response;
@@ -64,17 +64,17 @@ class index extends Component {
       return;
     }
 
-    const { polylineCode, updatedAt, startCoordinate, currentCoordinate } = response;
-    this.setState({ polylineCode, updatedAt, startCoordinate, currentCoordinate });
+    const { polylineCodes, updatedAt, startCoordinate, currentCoordinate } = response;    
+    this.setState({ polylineCodes, updatedAt, startCoordinate, currentCoordinate });
   }
   
   render() {
-    const { polylineCode, startCoordinate, currentCoordinate } = this.state;
+    const { polylineCodes, startCoordinate, currentCoordinate } = this.state;
 
     return (
       <div>
         <Map
-          polylineCode={polylineCode}
+          polylineCodes={polylineCodes}
           startCoordinate={startCoordinate}
           currentCoordinate={currentCoordinate}
           googleMapURL={"https://maps.googleapis.com/maps/api/js?key=AIzaSyBNw8ZOZT-iRYex-8YY8a7vbtHkElGO8II&v=3.exp&libraries=geometry,drawing,places"}
