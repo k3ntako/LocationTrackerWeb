@@ -12,7 +12,7 @@ module.exports = {
       }
 
       const newLocationPoints = lastIncludedIdx === -1 ? locationPoints : locationPoints.slice(lastIncludedIdx, lastIncludedIdx + 10);
-      // newLocationPoints are points that were not included in a previous polyline update. 
+      // newLocationPoints are points that were not included in a previous polyline update.
       // It includes the oldest 10 points that were not included because Google Maps charges more for polylines with 11+ waypointss
       // https://developers.google.com/maps/documentation/directions/usage-and-billing#directions-advanced
 
@@ -26,7 +26,7 @@ module.exports = {
       let url = GOOGLE_MAPS_URL + `&origin=${origin}&destination=${destination}`;
 
       // url for waypoints
-      const locationURL = locationURLArr.join('|via:');
+      const locationURL = locationURLArr.join('|');
       url += `&waypoints=via:` + locationURL;
 
       const response = await fetchUtils.get(url);
@@ -44,6 +44,7 @@ module.exports = {
 
       return [polylineCode, destinationPoint.time, startCoordinate];
     } catch (err) {
+      console.error("Error in getPolylineCode")
       console.error(err);
       return err;
     }

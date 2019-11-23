@@ -4,7 +4,7 @@ const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-
 const { getPolylineCode, generatePolylineResponse } = require('../utilities/runUtils');
 
 
-const getPolylineResponse = async (run, after) => {  
+const getPolylineResponse = async (run, after) => {
   after = after && new Date(after);
 
   const locationPoints = await run.getLocationPoints({
@@ -24,7 +24,7 @@ const getPolylineResponse = async (run, after) => {
 
   let polylines = await run.getPolylines();
 
-  if (!polylines|| !polylines.length || !run.polyline_updated_at || polyline_updated_at.getTime() !== lastLocationPoint.time.getTime()) {
+  if (!polylines || !polylines.length || !run.polyline_updated_at || polyline_updated_at.getTime() !== lastLocationPoint.time.getTime()) {
     // if polyline code in our DB is not up-to-date
     const [polylineCode, updatedAt, startCoordinate] = await getPolylineCode(locationPoints, run.polyline_updated_at);
     const orderNum = polylines.length ? polylines[polylines.length - 1].order + 1 : 0;
@@ -89,15 +89,15 @@ const RunController = {
       });
 
       if (rowsUpdated[0] > 1){
-        console.error(`User: ${user_id}: ${rowsUpdated[0]} runs were not finished.`); // In theory, at most only one run should be active at a time.  
+        console.error(`User: ${user_id}: ${rowsUpdated[0]} runs were not finished.`); // In theory, at most only one run should be active at a time.
       }
 
       const run = await Run.create({ name, user_id });
 
       await LocationPoint.create({
-        latitude, 
-        longitude, 
-        time, 
+        latitude,
+        longitude,
+        time,
         run_id: run.id,
       });
 
@@ -111,7 +111,7 @@ const RunController = {
   async record(req, res, next) {
     try {
       const { run_id } = req.params;
-      
+
       if (!run_id || !uuidRegex.test(run_id)) {
         throw Error('Invalid run ID');
       }
@@ -146,7 +146,7 @@ const RunController = {
       let { after } = req.query;
 
       const run = await Run.findByPk(run_id, after);
-    
+
       const responseJSON = await getPolylineResponse(run, after);
 
       res.json(responseJSON);
@@ -179,8 +179,8 @@ const RunController = {
   async getUserLiveRun(req, res, next) {
     try {
       const { user_id } = req.params;
-      let { after } = req.query;      
-      
+      let { after } = req.query;
+
       const runs = await Run.findAll({
         where: {
           user_id: user_id,
