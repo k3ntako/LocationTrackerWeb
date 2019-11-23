@@ -31,7 +31,7 @@ module.exports = {
 
       const response = await fetchUtils.get(url);
       if(!response.routes || !response.routes.length){
-        throw new Error('Invalid polyline response: ' + response.toString());
+        throw new Error('Invalid polyline response: ' + JSON.stringify(response));
       }
       const polylineCode = response.routes[0].overview_polyline.points;
 
