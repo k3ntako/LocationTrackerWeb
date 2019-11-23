@@ -27,7 +27,7 @@ module.exports = {
 
       // url for waypoints
       const locationURL = locationURLArr.join('|');
-      url += `&waypoints=via:` + locationURL;
+      url += `&waypoints=` + locationURL;
 
       const response = await fetchUtils.get(url);
       if(!response.routes || !response.routes.length){
